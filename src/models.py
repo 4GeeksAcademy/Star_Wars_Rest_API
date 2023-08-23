@@ -18,14 +18,15 @@ class User(db.Model):
         return {
             "id": self.id,
             "email": self.email,
+            "is_active": self.is_active,
             # do not serialize the password, its a security breach
         }
 
 class Favorite(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    character_id= db.Column(db.Integer, db.ForeignKey("character.id"), nullable=False)
-    planet_id= db.Column(db.Integer, db.ForeignKey("planet.id"), nullable=False)
+    character_id= db.Column(db.Integer, db.ForeignKey("character.id"))
+    planet_id= db.Column(db.Integer, db.ForeignKey("planet.id"))
 
     def __repr__(self):
         return '<Favorite %r>' % self.id
@@ -40,7 +41,7 @@ class Favorite(db.Model):
     
 class Character(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), nullable=False)
+    name = db.Column(db.String(120))
     description = db.Column(db.String(250), nullable=True)
     gender = db.Column(db.String(120), nullable=True)
     hair_color = db.Column(db.String(120), nullable=True)
