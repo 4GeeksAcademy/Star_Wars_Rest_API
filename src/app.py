@@ -76,11 +76,11 @@ def create_characters(character_id):
     print(body)
     favorite = Favorite(
         user_id = 2,
-        character_id = "character_id"
+        character_id = character_id
     )
     favorite.character_id = body['character_id']
    
-    if 'character_id' not in body:
+    if character_id not in body:
         return jsonify({"error": "Character ID is required"}), 400
 
     
@@ -97,20 +97,23 @@ def create_characters(character_id):
 def delete_characters(character_id):
 
     body = request.get_json()
-    print(request.get_json())
-    favorite = Favorite()
-    favorite.character_id = character_id
-    if 'planet_id' in body:
-        favorite.character_id = body['character_id']
-    else:
-        favorite.character_id = None
+    print(body)
+    favorite = Favorite(
+        user_id = 2,
+        character_id = character_id
+    )
+    favorite.character_id = body['character_id']
+   
+    if character_id not in body:
+        return jsonify({"error": "Character ID is required"}), 400
 
+    
     db.session.delete(favorite)
     db.session.commit()
 
     return jsonify({
-        "msg": f"Favorite added",
-        "inserted_id": f"{favorite.character_id}"
+        "msg": f"Favorite eliminated",
+        "eliminated_id": f"{favorite.character_id}"
     }), 200
 
 # Get all the planets
