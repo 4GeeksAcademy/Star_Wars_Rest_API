@@ -47,9 +47,9 @@ def handle_users_all():
 # Get one specific favorite with a specific user
 @app.route('/users/favorites', methods=['GET'])
 def handle_favorites():
-    user_id=2
+    user_id=1
     request.method == 'GET'
-    favorites = Favorite.query.filter_by(id=user_id).all()
+    favorites = Favorite.query.filter_by(user_id=user_id).all()
     return jsonify([x.serialize() for x in favorites]), 200
 
 
@@ -72,15 +72,12 @@ def handle_characters(character_id):
 @app.route('/favorite/characters/<int:character_id>', methods=['POST'])
 def create_characters(character_id):
     
-    body = request.get_json()
-    print(body)
     favorite = Favorite(
-        user_id = 2,
+        user_id = 1,
         character_id = character_id
     )
-    favorite.character_id = body['character_id']
    
-    if character_id not in body:
+    if character_id is None:
         return jsonify({"error": "Character ID is required"}), 400
 
     
@@ -133,15 +130,12 @@ def handle_planets(planet_id):
 @app.route('/favorite/planets/<int:planet_id>', methods=['POST'])
 def create_planets(planet_id):
 
-    body = request.get_json()
-    print(body)
     favorite = Favorite(
-        user_id = 2,
+        user_id = 1,
         planet_id = planet_id
         )
-    favorite.planet_id = body['planet_id']
-   
-    if 'planet_id' not in body:
+    
+    if 'planet_id' is None:
         return jsonify({"error": "Planet ID is required"}), 400
 
     
