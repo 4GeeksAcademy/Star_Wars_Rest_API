@@ -95,25 +95,24 @@ def create_characters(character_id):
 # Delete one specific favorite with a specific Character
 @app.route('/favorite/characters/<int:character_id>', methods=['DELETE'])
 def delete_characters(character_id):
+    user_id=1
+    # Check if a favorite record with the given character_id exists
+    favorite = Favorite.query.filter_by(character_id=character_id).first()
+    print(favorite)
 
-    body = request.get_json()
-    print(body)
-    favorite = Favorite(
-        user_id = 2,
-        character_id = character_id
-    )
-    favorite.character_id = body['character_id']
-   
-    if character_id not in body:
-        return jsonify({"error": "Character ID is required"}), 400
+    if favorite is None:
+        return jsonify({"error": "Favorite not found"}), 404
 
-    
-    db.session.delete(favorite)
-    db.session.commit()
+    try:
+        db.session.delete(favorite)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
 
     return jsonify({
         "msg": f"Favorite eliminated",
-        "eliminated_id": f"{favorite.character_id}"
+        "eliminated_id": f"{character_id}"
     }), 200
 
 # Get all the planets
@@ -157,28 +156,21 @@ def create_planets(planet_id):
 # Delete one specific favorite with a specific Planet
 @app.route('/favorite/planets/<int:planet_id>', methods=['DELETE'])
 def delete_planets(planet_id):
+    user_id=1
+    # Check if a favorite record with the given planet_id exists
+    favorite = Favorite.query.filter_by(planet_id=planet_id).first()
+    print(favorite)
 
-    body = request.get_json()
-    print(body)
-    favorite = Favorite(
-        user_id = 2,
-        planet_id = planet_id
-        )
-    favorite.planet_id = body['planet_id']
-   
-    if 'planet_id' not in body:
-        return jsonify({"error": "Planet ID is required"}), 400
+    if favorite is None:
+        return jsonify({"error": "Favorite not found"}), 404
 
-    
     db.session.delete(favorite)
     db.session.commit()
 
     return jsonify({
         "msg": f"Favorite eliminated",
-        "eliminated_id": f"{favorite.planet_id}"
+        "eliminated_id": f"{planet_id}"
     }), 200
-
-
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
