@@ -41,47 +41,16 @@ def sitemap():
 def handle_users_all():
    
     users = User.query.all()
-    return jsonify(users), 200
 
-# Get one specific user
-@app.route('/users/<int:user_id>', methods=['GET'])
-def handle_users(user_id):
+    return jsonify([x.serialize() for x in users]), 200
 
-    user = User.query.filter_by(id=user_id).first()
-    if user is not None:
-        return jsonify(user.serialize()), 200
-
-    return jsonify({"msg": "Request not valid"}), 400
-
-# Get and Post one specific favorite with a specific user
-@app.route('/users/favorites', methods=['GET', 'POST'])
-def handle_favorites(user_id=None):
-    if user_id is None:
-        return jsonify({"msg": "This endpoint needs a user_id"}), 400
-
-    if request.method == 'GET':
-        favorites = Favorite.query.filter_by(id=user_id).all()
-        return jsonify([x.serialize() for x in favorites]), 200
-
-    if request.method == 'POST':
-        body = request.get_json()
-        favorite = Favorite()
-        favorite.user_id = user_id
-        if 'character_id' in body:
-            favorite.character_id = body['character_id']
-        else:
-            favorite.planet_id = body['planet_id']
-
-        db.session.add(favorite)
-        db.session.commit()
-
-        return jsonify({
-            "msg": f"Favorite added",
-            "inserted_id": f"{favorite.id}"
-        }), 200
-
-
-    return jsonify({"msg": f"{request.method}: Request not valid"}), 400
+# Get one specific favorite with a specific user
+@app.route('/users/favorites', methods=['GET'])
+def handle_favorites():
+    user_id=2
+    request.method == 'GET'
+    favorites = Favorite.query.filter_by(id=user_id).all()
+    return jsonify([x.serialize() for x in favorites]), 200
 
 
 # Get all the Characters
@@ -89,70 +58,123 @@ def handle_favorites(user_id=None):
 def handle_characters_all():
    
     characters = Character.query.all()
-    return jsonify(characters), 200
+    return jsonify([x.serialize() for x in characters]), 200
 
-# Get and Post one specific favorite with a specific Character
-@app.route('/favorite/characters/<int:character_id>', methods=['GET', 'POST', 'DELETE'])
-def handle_characters(character_id=None):
-    if character_id is None:
-        return jsonify({"msg": "This endpoint needs a character_id"}), 400
+# Get one specific Character
+@app.route('/characters/<int:character_id>', methods=['GET'])
+def handle_characters(character_id):
+    character_id=1
 
-    if request.method == 'GET':
-        favorites = Favorite.query.filter_by(id=character_id).all()
-        return jsonify([x.serialize() for x in favorites]), 200
+    favorites = Favorite.query.filter_by(id=character_id).all()
+    return jsonify([x.serialize() for x in favorites]), 200
 
-    if request.method == 'POST':
-        body = request.get_json()
-        favorite = Favorite()
-        favorite.character_id = character_id
-        if 'character_id' in body:
-            favorite.character_id = body['character_id']
-        else:
-            favorite.planet_id = body['planet_id']
+# Post the favorite with a specific character
+@app.route('/favorite/characters/<int:character_id>', methods=['POST'])
+def create_characters(character_id):
+    
+    body = request.get_json()
+    print(body)
+    favorite = Favorite(
+        user_id = 2,
+        character_id = "character_id"
+    )
+    favorite.character_id = body['character_id']
+   
+    if 'character_id' not in body:
+        return jsonify({"error": "Character ID is required"}), 400
 
+    
     db.session.add(favorite)
     db.session.commit()
 
     return jsonify({
         "msg": f"Favorite added",
-        "inserted_id": f"{favorite.id}"
+        "inserted_id": f"{favorite.character_id}"
     }), 200
 
+# Delete one specific favorite with a specific Character
+@app.route('/favorite/characters/<int:character_id>', methods=['DELETE'])
+def delete_characters(character_id):
 
-# Planets
+    body = request.get_json()
+    print(request.get_json())
+    favorite = Favorite()
+    favorite.character_id = character_id
+    if 'planet_id' in body:
+        favorite.character_id = body['character_id']
+    else:
+        favorite.character_id = None
+
+    db.session.delete(favorite)
+    db.session.commit()
+
+    return jsonify({
+        "msg": f"Favorite added",
+        "inserted_id": f"{favorite.character_id}"
+    }), 200
+
+# Get all the planets
 @app.route('/planets', methods=['GET'])
 def handle_planets_all():
    
     planets = Planet.query.all()
-    return jsonify(planets), 200
+    return jsonify([x.serialize() for x in planets]), 200
 
-# Get and Post one specific favorite with a specific Planet
-@app.route('/favorite/planets/<int:planet_id>', methods=['GET', 'POST', 'DELETE'])
-def handle_planets(planet_id=None):
-    if planet_id is None:
-        return jsonify({"msg": "This endpoint needs a planet_id"}), 400
+# Get one specific Planet
+@app.route('/planets/<int:planet_id>', methods=['GET'])
+def handle_planets(planet_id):
 
-    if request.method == 'GET':
         favorites = Favorite.query.filter_by(id=planet_id).all()
         return jsonify([x.serialize() for x in favorites]), 200
 
-    if request.method == 'POST':
-        body = request.get_json()
-        favorite = Favorite()
-        favorite.planet_id = planet_id
-        if 'planet_id' in body:
-            favorite.planet_id = body['planet_id']
-        else:
-            favorite.planet_id = body['planet_id']
+# Post one specific favorite with a specific Planet
+@app.route('/favorite/planets/<int:planet_id>', methods=['POST'])
+def create_planets(planet_id):
 
+    body = request.get_json()
+    print(body)
+    favorite = Favorite(
+        user_id = 2,
+        planet_id = planet_id
+        )
+    favorite.planet_id = body['planet_id']
    
+    if 'planet_id' not in body:
+        return jsonify({"error": "Planet ID is required"}), 400
+
+    
     db.session.add(favorite)
     db.session.commit()
 
     return jsonify({
         "msg": f"Favorite added",
-        "inserted_id": f"{favorite.id}"
+        "inserted_id": f"{favorite.planet_id}"
     }), 200
+
+# Delete one specific favorite with a specific Planet
+@app.route('/favorite/planets/<int:planet_id>', methods=['DELETE'])
+def delete_planets(planet_id):
+
+    body = request.get_json()
+    print(body)
+    favorite = Favorite(
+        user_id = 2,
+        planet_id = planet_id
+        )
+    favorite.planet_id = body['planet_id']
+   
+    if 'planet_id' not in body:
+        return jsonify({"error": "Planet ID is required"}), 400
+
+    
+    db.session.delete(favorite)
+    db.session.commit()
+
+    return jsonify({
+        "msg": f"Favorite eliminated",
+        "eliminated_id": f"{favorite.planet_id}"
+    }), 200
+
 
 
 # this only runs if `$ python src/app.py` is executed
