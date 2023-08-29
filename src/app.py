@@ -12,8 +12,7 @@ from models import db, User, Character, Planet, Favorite
 
 #from flask_jwt_extended import create_access_token
 #from flask_jwt_extended import get_jwt_identity
-#from flask_jwt_extended import jwt_required
-#from flask_jwt_extended import JWTManager
+#from flask_jwt_extended import jwt_required#from flask_jwt_extended import JWTManager
 
 
 app = Flask(__name__)
@@ -49,15 +48,15 @@ def sitemap():
 #Create_acess_token() function is used to actually generate the JWT.
 #@app.route('/token', methods=['POST'])
 #def handle_token():
- #   email = request.json.get("email", None)
-  #  password = request.json.get("password", None)
+    email = request.json.get("email", None)
+    password = request.json.get("password", None)
     
-   # new_token = User.query.filter_by(email=email, password=password).first()
-    #if new_token is None:
-     #   return jsonify({"msg": " This email or password is incorrect"}), 401
+    new_token = User.query.filter_by(email=email, password=password).first()
+    if new_token is None:
+        return jsonify({"msg": " This email or password is incorrect"}), 401
 
-    #acess_token = create_access_token(identity=email)
-    #return jsonify(access_token=acess_token)
+    access_token = create_access_token(identity=email)
+    return jsonify(access_token=access_token)
 
 # Create users
 @app.route('/create-user', methods=['POST'])
@@ -151,6 +150,26 @@ def delete_characters(character_id):
         "eliminated_id": f"{character_id}"
     }), 200
 
+# Update the character with a specific id
+@app.route('/characters/<int:id>', methods=['PUT'])
+def update_characters(id):
+    # Check if the character with the given ID exists in the database
+    character = Character.query.get(id)
+
+    if character is None:
+        return jsonify({"error": "Character not found"}), 404
+
+    # Make the necessary updates to the character (for example, modifying its attributes)
+    # character.some_attribute = request.json.get("some_attribute")
+
+    # Commit the changes to the database
+    db.session.commit()
+
+    return jsonify({
+        "msg": f"Character updated",
+        "updated_id": id
+    }), 200
+
 # Get all the planets
 @app.route('/planets', methods=['GET'])
 def handle_planets_all():
@@ -203,6 +222,26 @@ def delete_planets(planet_id):
     return jsonify({
         "msg": f"Favorite eliminated",
         "eliminated_id": f"{planet_id}"
+    }), 200
+
+# Update the planet with a specific id
+@app.route('/planets/<int:id>', methods=['PUT'])
+def update_planets(id):
+    # Check if the planet with the given ID exists in the database
+    planet = Planet.query.get(id)
+
+    if planet is None:
+        return jsonify({"error": "planet not found"}), 404
+
+    # Make the necessary updates to the planet (for example, modifying its attributes)
+    # planet.some_attribute = request.json.get("some_attribute")
+
+    # Commit the changes to the database
+    db.session.commit()
+
+    return jsonify({
+        "msg": f"planet updated",
+        "updated_id": id
     }), 200
 
 # this only runs if `$ python src/app.py` is executed
