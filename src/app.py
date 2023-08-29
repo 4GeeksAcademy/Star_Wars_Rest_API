@@ -9,10 +9,19 @@ from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, User, Character, Planet, Favorite
-#from models import Person
+
+#from flask_jwt_extended import create_access_token
+#from flask_jwt_extended import get_jwt_identity
+#from flask_jwt_extended import jwt_required
+#from flask_jwt_extended import JWTManager
+
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
+
+#setup the Flask-JWT-Extended extension
+#app.config["JWT_SECRET_KEY"] = os.environ.get('JWT_SECRET')
+#jwt = JWTManager(app)
 
 db_url = os.getenv("DATABASE_URL")
 if db_url is not None:
@@ -35,6 +44,36 @@ def handle_invalid_usage(error):
 @app.route('/')
 def sitemap():
     return generate_sitemap(app)
+
+#Create a route to authenticate your users.
+#Create_acess_token() function is used to actually generate the JWT.
+#@app.route('/token', methods=['POST'])
+#def handle_token():
+ #   email = request.json.get("email", None)
+  #  password = request.json.get("password", None)
+    
+   # new_token = User.query.filter_by(email=email, password=password).first()
+    #if new_token is None:
+     #   return jsonify({"msg": " This email or password is incorrect"}), 401
+
+    #acess_token = create_access_token(identity=email)
+    #return jsonify(access_token=acess_token)
+
+# Create users
+@app.route('/create-user', methods=['POST'])
+def create_user():
+    
+    user = User()
+    user.email = request.json.get("email", None)
+    user.password = request.json.get("password", None)
+    new_user = User.query.filter_by(email=user.email, password=user.password).first()
+    if new_user is None:
+        return jsonify({"msg": " This email or password is incorrect"}), 401
+    
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify(new_user)
 
 # Get all the users
 @app.route('/users', methods=['GET'])
@@ -135,7 +174,7 @@ def create_planets(planet_id):
         planet_id = planet_id
         )
     
-    if 'planet_id' is None:
+    if planet_id is None:
         return jsonify({"error": "Planet ID is required"}), 400
 
     
@@ -170,3 +209,4 @@ def delete_planets(planet_id):
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
     app.run(host='0.0.0.0', port=PORT, debug=False)
+
