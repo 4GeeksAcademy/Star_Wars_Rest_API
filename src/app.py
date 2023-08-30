@@ -10,17 +10,17 @@ from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, User, Character, Planet, Favorite
 
-#from flask_jwt_extended import create_access_token
-#from flask_jwt_extended import get_jwt_identity
-#from flask_jwt_extended import jwt_required#from flask_jwt_extended import JWTManager
+from flask_jwt_extended import create_access_token, get_jwt_identity
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import JWTManager
 
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 
 #setup the Flask-JWT-Extended extension
-#app.config["JWT_SECRET_KEY"] = os.environ.get('JWT_SECRET')
-#jwt = JWTManager(app)
+app.config["JWT_SECRET_KEY"] = os.environ.get('JWT_SECRET')
+jwt = JWTManager(app)
 
 db_url = os.getenv("DATABASE_URL")
 if db_url is not None:
@@ -46,8 +46,8 @@ def sitemap():
 
 #Create a route to authenticate your users.
 #Create_acess_token() function is used to actually generate the JWT.
-#@app.route('/token', methods=['POST'])
-#def handle_token():
+@app.route('/token', methods=['POST'])
+def handle_token():
     email = request.json.get("email", None)
     password = request.json.get("password", None)
     
@@ -76,6 +76,7 @@ def create_user():
 
 # Get all the users
 @app.route('/users', methods=['GET'])
+@jwt_required()
 def handle_users_all():
    
     users = User.query.all()
@@ -84,22 +85,26 @@ def handle_users_all():
 
 # Get one specific favorite with a specific user
 @app.route('/users/favorites', methods=['GET'])
+@jwt_required()
 def handle_favorites():
-    user_id=1
+    user = User.query.filter_by(email=get_jwt_identity()).first()
     request.method == 'GET'
-    favorites = Favorite.query.filter_by(user_id=user_id).all()
+    favorites = Favorite.query.filter_by(user_id=user.id).all()
     return jsonify([x.serialize() for x in favorites]), 200
 
 
 # Get all the Characters
 @app.route('/characters', methods=['GET'])
+@jwt_required()
+
 def handle_characters_all():
-   
+    get_jwt_identity()
     characters = Character.query.all()
     return jsonify([x.serialize() for x in characters]), 200
 
 # Get one specific Character
 @app.route('/characters/<int:character_id>', methods=['GET'])
+@jwt_required()
 def handle_characters(character_id):
     character_id=1
 
@@ -108,10 +113,11 @@ def handle_characters(character_id):
 
 # Post the favorite with a specific character
 @app.route('/favorite/characters/<int:character_id>', methods=['POST'])
+@jwt_required()
 def create_characters(character_id):
     
     favorite = Favorite(
-        user_id = 1,
+        user = User.query.filter_by(email=get_jwt_identity()).first(),
         character_id = character_id
     )
    
@@ -129,8 +135,9 @@ def create_characters(character_id):
 
 # Delete one specific favorite with a specific Character
 @app.route('/favorite/characters/<int:character_id>', methods=['DELETE'])
+@jwt_required()
 def delete_characters(character_id):
-    user_id=1
+
     # Check if a favorite record with the given character_id exists
     favorite = Favorite.query.filter_by(character_id=character_id).first()
     print(favorite)
@@ -152,6 +159,7 @@ def delete_characters(character_id):
 
 # Update the character with a specific id
 @app.route('/characters/<int:id>', methods=['PUT'])
+@jwt_required()
 def update_characters(id):
     # Check if the character with the given ID exists in the database
     character = Character.query.get(id)
@@ -172,6 +180,7 @@ def update_characters(id):
 
 # Get all the planets
 @app.route('/planets', methods=['GET'])
+@jwt_required()
 def handle_planets_all():
    
     planets = Planet.query.all()
@@ -179,6 +188,7 @@ def handle_planets_all():
 
 # Get one specific Planet
 @app.route('/planets/<int:planet_id>', methods=['GET'])
+@jwt_required()
 def handle_planets(planet_id):
 
         favorites = Favorite.query.filter_by(id=planet_id).all()
@@ -186,10 +196,11 @@ def handle_planets(planet_id):
 
 # Post one specific favorite with a specific Planet
 @app.route('/favorite/planets/<int:planet_id>', methods=['POST'])
+@jwt_required()
 def create_planets(planet_id):
 
     favorite = Favorite(
-        user_id = 1,
+        user = User.query.filter_by(email=get_jwt_identity()).first(),
         planet_id = planet_id
         )
     
@@ -207,6 +218,7 @@ def create_planets(planet_id):
 
 # Delete one specific favorite with a specific Planet
 @app.route('/favorite/planets/<int:planet_id>', methods=['DELETE'])
+@jwt_required()
 def delete_planets(planet_id):
     user_id=1
     # Check if a favorite record with the given planet_id exists
@@ -226,6 +238,7 @@ def delete_planets(planet_id):
 
 # Update the planet with a specific id
 @app.route('/planets/<int:id>', methods=['PUT'])
+@jwt_required()
 def update_planets(id):
     # Check if the planet with the given ID exists in the database
     planet = Planet.query.get(id)
@@ -237,6 +250,7 @@ def update_planets(id):
     # planet.some_attribute = request.json.get("some_attribute")
 
     # Commit the changes to the database
+    db.session.update(planet)
     db.session.commit()
 
     return jsonify({
