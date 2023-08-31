@@ -172,6 +172,8 @@ def update_characters(id):
     # character.some_attribute = request.json.get("some_attribute")
 
     # Commit the changes to the database
+    # Commit the changes to the database
+    character.verified = True
     db.session.commit()
 
     return jsonify({
