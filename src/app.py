@@ -88,10 +88,8 @@ def handle_users_all():
 @jwt_required()
 def handle_favorites():
     user = User.query.filter_by(email=get_jwt_identity()).first()
-    request.method == 'GET'
     favorites = Favorite.query.filter_by(user_id=user.id).all()
     return jsonify([x.serialize() for x in favorites]), 200
-
 
 # Get all the Characters
 @app.route('/characters', methods=['GET'])
@@ -106,8 +104,6 @@ def handle_characters_all():
 @app.route('/characters/<int:character_id>', methods=['GET'])
 @jwt_required()
 def handle_characters(character_id):
-    character_id=1
-
     favorites = Favorite.query.filter_by(id=character_id).all()
     return jsonify([x.serialize() for x in favorites]), 200
 
@@ -115,32 +111,37 @@ def handle_characters(character_id):
 @app.route('/favorite/characters/<int:character_id>', methods=['POST'])
 @jwt_required()
 def create_characters(character_id):
-    
-    favorite = Favorite(
-        user = User.query.filter_by(email=get_jwt_identity()).first(),
-        character_id = character_id
-    )
-   
-    if character_id is None:
-        return jsonify({"error": "Character ID is required"}), 400
+    try:
+        user_email = get_jwt_identity()
+        user = User.query.filter_by(email=user_email).first()
 
-    
-    db.session.add(favorite)
-    db.session.commit()
+        if user is None:
+            return jsonify({"error": "User not found"}), 404
 
-    return jsonify({
-        "msg": f"Favorite added",
-        "inserted_id": f"{favorite.character_id}"
-    }), 200
+        if character_id is None:
+            return jsonify({"error": "Character ID is required"}), 400
+
+        favorite = Favorite(user_id=user.id, character_id=character_id)
+        db.session.add(favorite)
+        db.session.commit()
+
+        return jsonify({
+            "msg": "Favorite added",
+            "inserted_id": favorite.id  # Assuming `id` is the primary key of the Favorite model
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500   
 
 # Delete one specific favorite with a specific Character
 @app.route('/favorite/characters/<int:character_id>', methods=['DELETE'])
 @jwt_required()
 def delete_characters(character_id):
 
-    # Check if a favorite record with the given character_id exists
-    favorite = Favorite.query.filter_by(character_id=character_id).first()
-    print(favorite)
+    # Check if a favorite record as the given character_id and match to the user_id from the token of the user that are autorized in the moment that method are called in
+    user_email = get_jwt_identity()
+    user = User.query.filter_by(email=user_email).first()
+    favorite = Favorite.query.filter_by(user_id=user.id, character_id=character_id).first()
 
     if favorite is None:
         return jsonify({"error": "Favorite not found"}), 404
@@ -198,38 +199,46 @@ def handle_planets(planet_id):
 @app.route('/favorite/planets/<int:planet_id>', methods=['POST'])
 @jwt_required()
 def create_planets(planet_id):
+    try:
+        user_email = get_jwt_identity()
+        user = User.query.filter_by(email=user_email).first()
 
-    favorite = Favorite(
-        user = User.query.filter_by(email=get_jwt_identity()).first(),
-        planet_id = planet_id
-        )
-    
-    if planet_id is None:
-        return jsonify({"error": "Planet ID is required"}), 400
+        if user is None:
+            return jsonify({"error": "User not found"}), 404
 
-    
-    db.session.add(favorite)
-    db.session.commit()
+        if planet_id is None:
+            return jsonify({"error": "planet ID is required"}), 400
 
-    return jsonify({
-        "msg": f"Favorite added",
-        "inserted_id": f"{favorite.planet_id}"
-    }), 200
+        favorite = Favorite(user_id=user.id, planet_id=planet_id)
+        db.session.add(favorite)
+        db.session.commit()
+
+        return jsonify({
+            "msg": "Favorite added",
+            "inserted_id": favorite.id  # Assuming `id` is the primary key of the Favorite model
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500   
 
 # Delete one specific favorite with a specific Planet
 @app.route('/favorite/planets/<int:planet_id>', methods=['DELETE'])
 @jwt_required()
 def delete_planets(planet_id):
-    user_id=1
-    # Check if a favorite record with the given planet_id exists
-    favorite = Favorite.query.filter_by(planet_id=planet_id).first()
-    print(favorite)
+    # Check if a favorite record as the given character_id and match to the user_id from the token of the user that are autorized in the moment that method are called in
+    user_email = get_jwt_identity()
+    user = User.query.filter_by(email=user_email).first()
+    favorite = Favorite.query.filter_by(user_id=user.id, planet_id=planet_id).first()
 
     if favorite is None:
         return jsonify({"error": "Favorite not found"}), 404
 
-    db.session.delete(favorite)
-    db.session.commit()
+    try:
+        db.session.delete(favorite)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
 
     return jsonify({
         "msg": f"Favorite eliminated",
@@ -250,7 +259,7 @@ def update_planets(id):
     # planet.some_attribute = request.json.get("some_attribute")
 
     # Commit the changes to the database
-    db.session.update(planet)
+    planet.verified = True
     db.session.commit()
 
     return jsonify({
