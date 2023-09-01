@@ -52,7 +52,7 @@ class Character(db.Model):
     skin_color = db.Column(db.String(120), nullable=True)
 
     def __repr__(self):
-        return '<Favorite %r>' % self.id
+        return '<Character %r>' % self.id
 
     def serialize(self):
         return {
@@ -79,7 +79,7 @@ class Planet(db.Model):
     diameter = db.Column(db.String(3), nullable=True)
     terrain = db.Column(db.String(120), nullable=True)
     def __repr__(self):
-        return '<Favorite %r>' % self.id
+        return '<Planet %r>' % self.id
 
     def serialize(self):
         return {

@@ -96,7 +96,6 @@ def handle_favorites():
 @jwt_required()
 
 def handle_characters_all():
-    get_jwt_identity()
     characters = Character.query.all()
     return jsonify([x.serialize() for x in characters]), 200
 
@@ -104,8 +103,8 @@ def handle_characters_all():
 @app.route('/characters/<int:character_id>', methods=['GET'])
 @jwt_required()
 def handle_characters(character_id):
-    favorites = Favorite.query.filter_by(id=character_id).all()
-    return jsonify([x.serialize() for x in favorites]), 200
+    characters = Character.query.filter_by(id=character_id).all()
+    return jsonify([x.serialize() for x in characters]), 200
 
 # Post the favorite with a specific character
 @app.route('/favorite/characters/<int:character_id>', methods=['POST'])
@@ -172,8 +171,6 @@ def update_characters(id):
     # character.some_attribute = request.json.get("some_attribute")
 
     # Commit the changes to the database
-    # Commit the changes to the database
-    character.verified = True
     db.session.commit()
 
     return jsonify({
@@ -194,8 +191,8 @@ def handle_planets_all():
 @jwt_required()
 def handle_planets(planet_id):
 
-        favorites = Favorite.query.filter_by(id=planet_id).all()
-        return jsonify([x.serialize() for x in favorites]), 200
+        planets = Planet.query.filter_by(id=planet_id).all()
+        return jsonify([x.serialize() for x in planets]), 200
 
 # Post one specific favorite with a specific Planet
 @app.route('/favorite/planets/<int:planet_id>', methods=['POST'])
@@ -247,25 +244,31 @@ def delete_planets(planet_id):
         "eliminated_id": f"{planet_id}"
     }), 200
 
-# Update the planet with a specific id
+# Update the Planet with a specific id
 @app.route('/planets/<int:id>', methods=['PUT'])
 @jwt_required()
 def update_planets(id):
-    # Check if the planet with the given ID exists in the database
+    # Check if the Planet with the given ID exists in the database
     planet = Planet.query.get(id)
 
     if planet is None:
-        return jsonify({"error": "planet not found"}), 404
+        return jsonify({"error": "Planet not found"}), 404
 
-    # Make the necessary updates to the planet (for example, modifying its attributes)
-    # planet.some_attribute = request.json.get("some_attribute")
+    # Make the necessary updates to the Planet (for example, modifying its attributes)
+    planet.name = request.json.get("name")
+    planet.description = request.json.get("description")
+    planet.climate = request.json.get("climate")
+    planet.populatopn = request.json.get("populatopn")
+    planet.orbital_period = request.json.get("orbital_period")
+    planet.rotation_period = request.json.get("rotation_period")
+    planet.diameter = request.json.get("diameter")
+    planet.terrain = request.json.get("terrain")
 
     # Commit the changes to the database
-    planet.verified = True
     db.session.commit()
 
     return jsonify({
-        "msg": f"planet updated",
+        "msg": f"Planet updated",
         "updated_id": id
     }), 200
 
