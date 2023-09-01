@@ -47,7 +47,6 @@ class Character(db.Model):
     hair_color = db.Column(db.String(120), nullable=True)
     eye_color = db.Column(db.String(120), nullable=True)
     birth_year = db.Column(db.String(120), nullable=True)
-    rotation_period = db.Column(db.String(120), nullable=True)
     height = db.Column(db.String(3), nullable=True)
     skin_color = db.Column(db.String(120), nullable=True)
 
@@ -63,7 +62,6 @@ class Character(db.Model):
             "hair_color": self.hair_color,
             "eye_color": self.eye_color,
             "birth_year": self.birth_year,
-            "rotation_period": self.rotation_period,
             "height": self.height,
             "skin_color": self.skin_color,
         }

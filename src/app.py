@@ -165,16 +165,22 @@ def update_characters(id):
     character = Character.query.get(id)
 
     if character is None:
-        return jsonify({"error": "Character not found"}), 404
+        return jsonify({"error": "character not found"}), 404
 
     # Make the necessary updates to the character (for example, modifying its attributes)
-    # character.some_attribute = request.json.get("some_attribute")
-
+    character.name = request.json.get("name")
+    character.description = request.json.get("description")
+    character.birth_year = request.json.get("birth_year")
+    character.eye_color = request.json.get("eye_color")
+    character.gender = request.json.get("gender")
+    character.diameter = request.json.get("diameter")
+    character.terrain = request.json.get("terrain")
+ 
     # Commit the changes to the database
     db.session.commit()
 
     return jsonify({
-        "msg": f"Character updated",
+        "msg": f"character updated",
         "updated_id": id
     }), 200
 
@@ -260,10 +266,10 @@ def update_planets(id):
     planet.climate = request.json.get("climate")
     planet.populatopn = request.json.get("populatopn")
     planet.orbital_period = request.json.get("orbital_period")
-    planet.rotation_period = request.json.get("rotation_period")
-    planet.diameter = request.json.get("diameter")
+    planet.height = request.json.get("height")
+    planet.skin_color = request.json.get("skin_color")
     planet.terrain = request.json.get("terrain")
-
+ 
     # Commit the changes to the database
     db.session.commit()
 
