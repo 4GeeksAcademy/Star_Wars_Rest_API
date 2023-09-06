@@ -66,8 +66,6 @@ def create_user():
     user.email = request.json.get("email", None)
     user.password = request.json.get("password", None)
     new_user = User.query.filter_by(email=user.email, password=user.password).first()
-    if new_user is None:
-        return jsonify({"msg": " This email or password is incorrect"}), 401
     
     db.session.add(new_user)
     db.session.commit()
